@@ -15,10 +15,13 @@ lazy val gb = crossProject.in(file(".")).
     version := "0.1-SNAPSHOT"
   ).
   jvmSettings(
+    resolvers += "Sonatype OSS Releases" at
+      "https://oss.sonatype.org/content/repositories/releases/",
   	libraryDependencies ++= Seq(
 		"com.typesafe.akka" %% "akka-actor" % "2.4.7",
 		"com.typesafe.akka" %% "akka-stream" % "2.4.7",
-		"com.typesafe.akka" %% "akka-http-experimental" % "2.4.7"
+		"com.typesafe.akka" %% "akka-http-experimental" % "2.4.7",
+      "com.livestream" %% "scredis" % "2.0.6"
 		)
 	  ).
   jsSettings(

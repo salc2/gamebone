@@ -10,7 +10,7 @@ import scala.io.StdIn
 
 object WebServer {
   def main(args:Array[String]):Unit = {
-    implicit val system = ActorSystem("my-system")
+    implicit val system = ActorSystem("gamebone-system")
     implicit val materializer = ActorMaterializer()
     implicit val executionContext = system.dispatcher
 
