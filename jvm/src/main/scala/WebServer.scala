@@ -2,7 +2,6 @@ package com.chucho.server
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.{ContentTypes, HttpEntity}
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
 
@@ -16,11 +15,19 @@ object WebServer {
     implicit val executionContext = system.dispatcher
 
     val route =
-      path("hello") {
-        get {
-          complete(HttpEntity(ContentTypes.`text/html(UTF-8)`, "<h1>Say hello to akka-http</h1>"))
-        }
+      path("api" / Segment / "gamebone.js") { tokenRest =>
+          val loader = getClass.getClassLoader
+          val jsmain = loader.getResource("main.js")
+          getFromFile(jsmain.getFile)
+      } ~
+      path(Remaining){ remain =>
+        pathEnd{
+          getFromResource(s"http/$remain/index.html")
+        }~
+        getFromResource(s"http/$remain")
       }
+
+
 
     val bindingFuture = Http().bindAndHandle(route, "localhost", 8080)
 
