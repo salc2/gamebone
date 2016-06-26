@@ -23,7 +23,7 @@ class BackboneMessage(private val redis:Redis)(implicit materializer:ActorMateri
       }) )
 
   def createPublisher(channel:Channel):Source[Message,_] = {
-    Source.actorPublisher[TextMessage](Props(classOf[BackbonePublisher],redis,channel))
+    Source.actorPublisher[TextMessage](Props(classOf[BackbonePublisher],Redis(),channel))
   }
 }
 
@@ -35,6 +35,13 @@ object BackboneMessage{
 
 class BackbonePublisher(private val redis:Redis, channel:String)
   extends ActorPublisher[TextMessage] with ActorLogging{
+
+
+  @scala.throws[Exception](classOf[Exception])
+  override def preStart(): Unit = {
+    super.preStart()
+    log.info(s" starting.... -> ${self.path.name}")
+  }
 
   val MaxBufferSize = 100
   var buf = Vector.empty[TextMessage]

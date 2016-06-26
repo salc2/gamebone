@@ -21,7 +21,8 @@ lazy val gb = crossProject.in(file(".")).
 		"com.typesafe.akka" %% "akka-actor" % "2.4.7",
 		"com.typesafe.akka" %% "akka-stream" % "2.4.7",
 		"com.typesafe.akka" %% "akka-http-experimental" % "2.4.7",
-      "com.livestream" %% "scredis" % "2.0.6"
+      "com.livestream" %% "scredis" % "2.0.6",
+      "org.slf4j" % "slf4j-simple" % "1.7.21"
 		)
 	  ).
   jsSettings(
