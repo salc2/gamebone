@@ -12,8 +12,7 @@ object WebServer {
     implicit val system = ActorSystem("gamebone-system")
     implicit val materializer = ActorMaterializer()
     implicit val executionContext = system.dispatcher
-    val backbone = BackboneMessage(materializer)
-
+    val backbone = BackboneMessage
 
     val route =
       path("ws" / Segment){ rest =>
