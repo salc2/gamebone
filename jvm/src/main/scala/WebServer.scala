@@ -2,8 +2,10 @@ package com.chucho.server
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.model.ws.Message
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
+import akka.stream.scaladsl.{Flow, Sink, Source}
 
 import scala.io.StdIn
 
@@ -13,9 +15,11 @@ object WebServer {
     implicit val system = ActorSystem("gamebone-system")
     implicit val materializer = ActorMaterializer()
     implicit val executionContext = system.dispatcher
-
+    val backbone = BackboneMessage(materializer)
     val route =
-      path("api" / Segment / "gamebone.js") { tokenRest =>
+      path("ws" / Segment){ rest =>
+        complete(" ")
+      } ~ path("api" / Segment / "gamebone.js") { tokenRest =>
           val loader = getClass.getClassLoader
           val jsmain = loader.getResource("main.js")
           getFromFile(jsmain.getFile)

@@ -1,7 +1,8 @@
 package com.chucho.server
 
 import akka.actor.{ActorLogging, ActorRef, ActorSystem, Props}
-import akka.http.scaladsl.model.ws.{TextMessage}
+import akka.http.scaladsl.model.ws.TextMessage
+import akka.stream.ActorMaterializer
 import akka.stream.actor.ActorPublisher
 import akka.stream.actor.ActorPublisherMessage.{Cancel, Request}
 import akka.stream.scaladsl.{Sink, Source}
@@ -13,10 +14,13 @@ import scala.collection.immutable.Vector
 /**
   * Created by chucho on 6/25/16.
   */
-class BackboneMessage(private val redis:Redis) {
+class BackboneMessage(private val redis:Redis)(implicit materializer:ActorMaterializer) {
   type Channel = String
   def createReceiver(channel:Channel):Sink[TextMessage,Any] =
-    Sink.foreach[TextMessage]( m => redis.publish[TextMessage](channel,m) )
+    Sink.foreach[TextMessage]( m => m.textStream
+      .runWith(Sink.foreach[String]{ msg =>
+        redis.publish[String](channel,msg)
+      }) )
 
   def createPublisher(channel:Channel):Source[TextMessage,_] = {
     Source.actorPublisher[TextMessage](Props(classOf[BackbonePublisher],redis,channel))
@@ -24,8 +28,8 @@ class BackboneMessage(private val redis:Redis) {
 }
 
 object BackboneMessage{
-  def apply(implicit system:ActorSystem): BackboneMessage = new BackboneMessage(Redis())
-  def apply(redisConfg:RedisConfig)(implicit system:ActorSystem): BackboneMessage =
+  def apply(implicit materializer:ActorMaterializer): BackboneMessage = new BackboneMessage(Redis())
+  def apply(redisConfg:RedisConfig)(implicit materializer:ActorMaterializer): BackboneMessage =
     new BackboneMessage(Redis(redisConfg))
 }
 
