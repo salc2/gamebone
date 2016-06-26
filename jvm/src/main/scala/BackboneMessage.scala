@@ -1,7 +1,7 @@
 package com.chucho.server
 
 import akka.actor.{ActorLogging, ActorRef, ActorSystem, Props}
-import akka.http.scaladsl.model.ws.TextMessage
+import akka.http.scaladsl.model.ws.{Message, TextMessage}
 import akka.stream.ActorMaterializer
 import akka.stream.actor.ActorPublisher
 import akka.stream.actor.ActorPublisherMessage.{Cancel, Request}
@@ -16,13 +16,13 @@ import scala.collection.immutable.Vector
   */
 class BackboneMessage(private val redis:Redis)(implicit materializer:ActorMaterializer) {
   type Channel = String
-  def createReceiver(channel:Channel):Sink[TextMessage,Any] =
-    Sink.foreach[TextMessage]( m => m.textStream
+  def createReceiver(channel:Channel):Sink[Message,_] =
+    Sink.foreach[Message]( m => m.asInstanceOf[TextMessage].textStream
       .runWith(Sink.foreach[String]{ msg =>
         redis.publish[String](channel,msg)
       }) )
 
-  def createPublisher(channel:Channel):Source[TextMessage,_] = {
+  def createPublisher(channel:Channel):Source[Message,_] = {
     Source.actorPublisher[TextMessage](Props(classOf[BackbonePublisher],redis,channel))
   }
 }

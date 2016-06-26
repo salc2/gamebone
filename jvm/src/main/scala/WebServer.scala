@@ -2,11 +2,8 @@ package com.chucho.server
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.ws.Message
 import akka.http.scaladsl.server.Directives._
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{Flow, Sink, Source}
-
 import scala.io.StdIn
 
 
@@ -16,13 +13,21 @@ object WebServer {
     implicit val materializer = ActorMaterializer()
     implicit val executionContext = system.dispatcher
     val backbone = BackboneMessage(materializer)
+
+
     val route =
       path("ws" / Segment){ rest =>
-        complete(" ")
+          extractUpgradeToWebSocket { upgrade =>
+            import backbone._
+            val sink = createReceiver(rest)
+            val source = createPublisher(rest)
+            complete(upgrade.handleMessagesWithSinkSource(sink,source))
+          }
+
       } ~ path("api" / Segment / "gamebone.js") { tokenRest =>
           val loader = getClass.getClassLoader
-          val jsmain = loader.getResource("main.js")
-          getFromFile(jsmain.getFile)
+          val jsMain = loader.getResource("main.js")
+          getFromFile(jsMain.getFile)
       } ~
       path(Remaining){ remain =>
         pathEnd{
